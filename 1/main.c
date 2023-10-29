@@ -4,7 +4,7 @@
 /*                                                                                  */
 /*  Komunikace pres UART */
 /*                                                                                  */
-/*  Reseni vytvoril a odevzdava: (jmeno, login) */
+/*  Reseni vytvoril a odevzdava: Onegen Something, xkrame00 */
 /*                                                                                  */
 /************************************************************************************/
 
