@@ -102,8 +102,7 @@ void PORTB_IRQHandler(void) {
      /* === Tlacitko CENTER === */
 
      // Kontrola povodu prerusenia
-     if ((PORTB->ISFR & BUTTON_CENT_MASK)
-         || (PORTB->PCR[4] & PORT_PCR_ISF_MASK)) {
+     if (PORTB->ISFR & BUTTON_CENT_MASK) {
           // Kontrola stavu tlacitka (nejedna sa o zakmit)
           if (!(GPIOB_PDIR & BUTTON_CENT_MASK)) {
                // Odozva
@@ -146,6 +145,8 @@ void init_hardware(void) {
      // Port B, kde je RED LED a bzucak nastavime jako vystupni GPIO, abychom
      // mohli tyto komponenty programove ridit - vizte funkce beep(), flash()
      PORTB->PCR[9] |= PORT_PCR_MUX(0x01); /* Pin Mux Control - GPIO (RED LED) */
+     // PORTB->PCR[10] |= PORT_PCR_MUX(0x01);
+     // PORTB->PCR[11] |= PORT_PCR_MUX(0x01);
      PORTB->PCR[13]
          |= PORT_PCR_MUX(0x01); /* Pin Mux Control - GPIO (BZZZZZZ) */
      GPIOB_PDDR |= PIEZZO_MASK | LED_R_MASK;
