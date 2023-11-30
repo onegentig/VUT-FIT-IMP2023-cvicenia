@@ -71,7 +71,7 @@ void MCU_Init(void) {
 
      PORTB->PCR[0] = PORT_PCR_MUX(0x00);   // Potenciometr jako vstup ADC0
      PORTB->PCR[12] = PORT_PCR_MUX(0x01);  // DIG4 na portu B jako GPIO
-     PTB->PDDR = GPIO_PDDR_PDD(0x1000);    // Konfigurace DIG4 jako výstupů
+     PTB->PDDR = GPIO_PDDR_PDD(0x1000);    // Konfigurace DIG4 jako výstupu
 }
 
 /* Funkce realizující zpoždění formou aktivního čekání */
@@ -92,7 +92,7 @@ void display_val(char *val_str) {
           return;
      }
 
-     // Má smysl zobrazovat pouze cislice
+     // Má smysl zobrazovat pouze číslice
      if (isdigit(val_str[index])) {
           PTA->PDOR = GPIO_PDOR_PDO(digit[val_str[index] - '0']);
           index++;
@@ -154,21 +154,23 @@ void ADC0_Init(void) {
  * PRO VÝPIS FP VÝSLEDKU, MUSÍ SI V NASTAVENÍ PROJEKTU V KDS AKTIVOVAT PRO TO *
  * PODPORU, NÁVOD VIZ ZDE: https://community.nxp.com/thread/442798            *
  * případně je možné využít vlastní pomocné implementace nebo se inspirovat   *
- * něčím existujícím např. zde: https://stackoverflow.com/questions/12703307/ *
+ * něčím existujícím např. zde: https://stackoverflow.com/questions/12703307  *
  *
  * Do tohoto řetezce vložte výslednou hodnotu přepočtenou z ADC ve formátu
  * s přesností na 2 desetinná místa v rozsahu napětí potenciometru. Pozor:
  * jedná se o standardní Céčkovský řetezec, který musí být ukončen znakem \0! */
 char result[10] = "xxxx";
 void ADC0_IRQHandler(void) {
-     // Kontrola COCO (conversion complete) flagu.
-     // V podstate useless, lebo COCO vyvoláva toto prerušenie.
-     if (!((ADC0->SC1[0] & ADC_SC1_COCO_MASK))) return;
+     // Dokončenie konverzie signalizuje COCO (conversion complete) flag.
+     // Kontrolovať ho netreba, pretože len COCO=1 vyvolá prerušenie, pokiaľ
+     //      je flag AIEN=1.
+     // if (!((ADC0->SC1[0] & ADC_SC1_COCO_MASK))) return;
 
      // Napätie = (hodnota ADC × referenčné näpatie) / rozlíšenie ADC
-     unsigned int res = (ADC0->R[0] * 330) / 255;
+     unsigned int res = (ADC0->R[0] * 330) / 255; // 330 = 3.3V × 100
 
-     // Konverzia na reťazec bez floating logiky
+     // Konverzia na reťazec bez floating logiky cez insert charov od konca.
+     result[4] = '\0';  // NULL terminator
      for (int res_i = 3; res_i > -1; res_i--) {
           if (res_i == 1) {
                result[res_i] = '.';
@@ -179,7 +181,9 @@ void ADC0_IRQHandler(void) {
           res /= 10;
      }
 
-     // COCO flag sa resetuje automaticky pri prečítaní R (result).
+     // COCO flag sa automaticky vynuluje po čítaní z ADC0->R[0], žiadne
+     //     "čistenie prerušenia" netreba riešiť.
+     // ADC0->SC1[0] &= ~ADC_SC1_COCO_MASK;
 }
 
 /******************************************************************************/
